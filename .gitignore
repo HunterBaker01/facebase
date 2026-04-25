@@ -1,0 +1,13 @@
+# Python
+recognizer/__pycache__/
+recognizer/*.pyc
+recognizer/.venv/
+
+# Rust
+organizer/target/
+
+# Don't commit real family photos
+*.jpg
+*.jpeg
+*.png
+*.heic
