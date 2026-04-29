@@ -11,3 +11,9 @@ organizer/target/
 *.jpeg
 *.png
 *.heic
+data/*.jpg
+data/*.jpeg
+data/*.png
+data/*.heic
+data/*.pkl
+data/
