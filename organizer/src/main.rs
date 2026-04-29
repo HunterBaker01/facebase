@@ -1,13 +1,12 @@
 use anyhow::{Context, Result, bail};
 use serde_json;
 use std::env;
+use std::path::Path;
 use std::process::Command;
 
 fn run_recognition(img_path: &str) -> Result<String> {
-    let output = Command::new("python3")
-        .arg("../recognizer/recgonize.py")
-        .arg(img_path)
-        .output()?;
+    let python = Path::new(env!("CARGO_MANIFEST_DIR")).join("../recognizer/recognize.py");
+    let output = Command::new("python3").arg(python).arg(img_path).output()?;
 
     if !output.status.success() {
         bail!("{}", String::from_utf8_lossy(&output.stderr));

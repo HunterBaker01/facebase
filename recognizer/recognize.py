@@ -17,7 +17,8 @@ def recognition(path: str, db_path: str):
     results = DeepFace.find(
         img_path=load_image(path),
         db_path=db_path,
-        enforce_detection=False
+        enforce_detection=False,
+        silent=True,
     )
 
     output = [{"identity": row["identity"], "distance": row["distance"]} for df in results for _, row in df.iterrows()]
