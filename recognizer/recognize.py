@@ -21,9 +21,12 @@ def recognition(path: str, db_path: str):
         silent=True,
     )
 
-    output = [{"identity": row["identity"], "distance": row["distance"]} for df in results for _, row in df.iterrows()]
+    output = [{"identity": row["identity"]} for df in results for _, row in df.iterrows()]
 
     print(json.dumps(output))
 
-img_path = sys.argv[1]
-recognition(img_path, "../data/")
+def enroll(path: str):
+    DeepFace.register(img=path)
+# img_path = sys.argv[1]
+# recognition(img_path, "../data/")
+enroll("../IMG_8882.jpg")

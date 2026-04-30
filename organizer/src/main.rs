@@ -7,7 +7,6 @@ use std::process::Command;
 #[derive(Deserialize, Debug)]
 struct Person {
     identity: String,
-    distance: f64,
 }
 
 fn run_recognition(img_path: &str) -> Result<Vec<Person>> {
