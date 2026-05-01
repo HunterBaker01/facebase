@@ -1,8 +1,10 @@
 from deepface import DeepFace
 import psycopg
 from pgvector.psycopg import register_vector
+from pathlib import Path
 
 def enrol(img: str, name: str, notes: str="None"):
+    abs_path = str(Path(img).resolve(strict=True))
     with psycopg.connect("postgresql://localhost/photos") as conn:
         with conn.cursor() as cur:
             register_vector(conn)
@@ -23,8 +25,6 @@ def enrol(img: str, name: str, notes: str="None"):
             person_id = cur.fetchone()[0]
             cur.execute(
                 "INSERT INTO face_embeddings (person_id, embedding, source_image_path) VALUES (%s, %s, %s)",
-                (person_id, embedding, img)
+                (person_id, embedding, abs_path)
             )
             print(f"{name} added successfully!")
-
-enrol("../IMG_8882.jpg", "Hunter", "Son of Lorrie")
