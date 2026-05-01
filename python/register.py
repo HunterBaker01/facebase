@@ -1,12 +1,15 @@
 from deepface import DeepFace
+import psycopg
 
 def enrol(img: str, img_name: str):
-    DeepFace.register(
-        img=img,
-        img_name=img_name,
+    conn = psycopg.connect("postgresql://localhost/family_photos")
+    result = DeepFace.represent(
+        img_path=img,
         model_name="ArcFace",
-        database_type="postgres",
-        connection_details="postgres://localhost/family_photos"
+        detector_backend="retinaface",
+        l2_normalize=True,
     )
+    print(f"Registered {img_name}: {result}")
+    conn.close()
 
-enrol("../IMG_8882.jpg", "Hele")
+enrol("../14bf5083-5a03-44e0-bb65-d6aae0aef276.JPG", "Hunter")
