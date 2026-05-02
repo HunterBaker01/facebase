@@ -13,6 +13,8 @@ def image_info(img: str):
         l2_normalize=True,
     )
 
+
+
 def add_embedding(conn, person_id: int, embedding: list, img_path: str):
     with conn.cursor() as cur:
         cur.execute(
