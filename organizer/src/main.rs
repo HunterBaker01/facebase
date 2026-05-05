@@ -1,17 +1,22 @@
 use anyhow::{Context, Result, bail};
+use postgres::{Client, NoTls};
 use serde::Deserialize;
 use std::env;
 use std::path::Path;
 use std::process::Command;
 
 #[derive(Deserialize, Debug)]
-struct Person {
-    identity: String,
-}
-
-#[derive(Deserialize, Debug)]
 struct Embedding {
     embedding: Vec<f64>,
+}
+
+fn get_client() -> Result<Client> {
+    Ok(Client::configure()
+        .host("localhost")
+        .dbname("photos")
+        .user(std::env::var("USER")?.as_str())
+        .connect(NoTls)
+        .context("Wasn't able to connect to the database...")?)
 }
 
 fn get_embedding(img_path: &str) -> Result<Vec<Embedding>> {
@@ -27,8 +32,11 @@ fn get_embedding(img_path: &str) -> Result<Vec<Embedding>> {
 }
 
 fn main() -> Result<()> {
-    let path = env::args().nth(1).context("No path provided...")?;
-    let result = get_embedding(&path)?;
-    println!("{result:?}");
+    // let path = env::args().nth(1).context("No path provided...")?;
+    // let result = get_embedding(&path)?;
+    // let first = &result[0];
+    // println!("{first:?}");
+    let mut client = get_client()?;
+    client.execute("DELETE FROM people * ", &[])?;
     Ok(())
 }
