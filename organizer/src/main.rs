@@ -1,6 +1,6 @@
 use anyhow::{Context, Result, bail};
 use pgvector::Vector;
-use postgres::{Client, NoTls, Row};
+use postgres::{Client, NoTls};
 use serde::Deserialize;
 use std::env;
 use std::path::Path;
@@ -33,7 +33,7 @@ fn get_embedding(img_path: &str) -> Result<Vec<Embedding>> {
 }
 
 fn add_embedding(
-    mut client: Client,
+    client: &mut Client,
     person_id: &i32,
     embedding: &Vector,
     img_path: &str,
@@ -46,7 +46,7 @@ fn add_embedding(
 }
 
 fn register(
-    mut client: Client,
+    client: &mut Client,
     name: &str,
     notes: Option<String>,
     embedding: &Vector,
@@ -64,12 +64,45 @@ fn register(
     Ok(())
 }
 
+fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<String>> {
+    let row = client.query_opt(
+        "SELECT p.id, p.name, fe.embedding <=> $1 AS distance \
+         FROM face_embeddings fe \
+         JOIN people p ON p.id = fe.person_id \
+         ORDER BY distance LIMIT 1",
+        &[&embedding],
+    )?;
+
+    let name = match row {
+        Some(r) => {
+            let distance: f64 = r.get::<_, f64>("distance");
+            if distance < 0.4 {
+                Some(r.get::<_, String>("name"))
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+    Ok(name)
+}
+
 fn main() -> Result<()> {
     let path = env::args().nth(1).context("No path provided...")?;
+    let path2 = env::args().nth(2).context("Nops")?;
     let result = get_embedding(&path)?;
+    let result2 = get_embedding(&path2)?;
     let embedding = &result[0].embedding;
-    let client = get_client()?;
-    let person_id = 15;
-    register(client, &person_id, embedding, &path)?;
+    let embedding2 = &result2[0].embedding;
+    let mut client = get_client()?;
+    register(
+        &mut client,
+        "Hunter",
+        Some(String::from("Beast")),
+        embedding,
+        &path,
+    )?;
+    let name = recognition(&mut client, embedding2)?;
+    println!("{name:?}");
     Ok(())
 }
