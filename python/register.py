@@ -39,7 +39,7 @@ def register(conn, image_info: list, img: str, name: str, notes: str="None"):
 
         cur.execute(
             "INSERT INTO people (name, notes) VALUES (%s, %s) "
-            "ON CONFLICT (name) DO UPDATE SET notes = EXCLUDED.notes "
+            "on conflict (name) do update set notes = excluded.notes "
             "RETURNING id",
             (name, notes)
         )

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result, bail};
 use pgvector::Vector;
-use postgres::{Client, NoTls};
+use postgres::{Client, NoTls, Row};
 use serde::Deserialize;
 use std::env;
 use std::path::Path;
@@ -32,11 +32,35 @@ fn get_embedding(img_path: &str) -> Result<Vec<Embedding>> {
     Ok(embedding)
 }
 
-fn register(mut client: Client, person_id: &i32, embedding: &Vector, img_path: &str) -> Result<()> {
+fn add_embedding(
+    mut client: Client,
+    person_id: &i32,
+    embedding: &Vector,
+    img_path: &str,
+) -> Result<()> {
     client.execute(
         "INSERT INTO face_embeddings (person_id, embedding, source_image_path) VALUES ($1, $2, $3)",
         &[&person_id, &embedding, &img_path],
     )?;
+    Ok(())
+}
+
+fn register(
+    mut client: Client,
+    name: &str,
+    notes: Option<String>,
+    embedding: &Vector,
+    img_path: &str,
+) -> Result<()> {
+    let row = client.query_one(
+        "INSERT INTO people (name, notes) VALUES ($1, $2) \
+            ON CONFLICT (name) DO UPDATE SET notes = EXCLUDED.notes \
+            RETURNING id",
+        &[&name, &notes.unwrap_or(String::from("None"))],
+    )?;
+
+    let person_id: i32 = row.get("id");
+    add_embedding(client, &person_id, embedding, img_path)?;
     Ok(())
 }
 
