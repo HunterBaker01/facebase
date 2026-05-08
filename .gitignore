@@ -1,19 +1,14 @@
 # Python
-recognizer/__pycache__/
-recognizer/*.pyc
-recognizer/.venv/
+python/__pycache__/
+python/*.pyc
+python/.venv/
 
 # Rust
 organizer/target/
 
-# Don't commit real family photos
-*.jpg
-*.jpeg
-*.png
-*.heic
-data/*.jpg
-data/*.jpeg
-data/*.png
-data/*.heic
-data/*.pkl
+# Env / secrets
+.env
+
+# Don't commit real family photos or model cache
 data/
+*.pkl
