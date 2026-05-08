@@ -1,9 +1,11 @@
 use anyhow::{Context, Result, bail};
+use clap::{Parser, ValueEnum};
 use pgvector::Vector;
 use postgres::{Client, NoTls};
 use serde::Deserialize;
 use std::env;
-use std::path::Path;
+use std::fs::canonicalize;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[derive(Deserialize, Debug)]
@@ -20,7 +22,7 @@ fn get_client() -> Result<Client> {
         .context("Wasn't able to connect to the database...")
 }
 
-fn get_embedding(img_path: &str) -> Result<Vec<Embedding>> {
+fn get_embedding(img_path: &PathBuf) -> Result<Vec<Embedding>> {
     let python = Path::new(env!("CARGO_MANIFEST_DIR")).join("../python/embedding.py");
     let output = Command::new("python3").arg(python).arg(img_path).output()?;
 
@@ -36,11 +38,12 @@ fn add_embedding(
     client: &mut Client,
     person_id: &i32,
     embedding: &Vector,
-    img_path: &str,
+    img_path: &Path,
 ) -> Result<()> {
+    let path = img_path.to_string_lossy();
     client.execute(
         "INSERT INTO face_embeddings (person_id, embedding, source_image_path) VALUES ($1, $2, $3)",
-        &[&person_id, &embedding, &img_path],
+        &[&person_id, &embedding, &path],
     )?;
     Ok(())
 }
@@ -50,7 +53,7 @@ fn register(
     name: &str,
     notes: Option<String>,
     embedding: &Vector,
-    img_path: &str,
+    img_path: &Path,
 ) -> Result<()> {
     let row = client.query_one(
         "INSERT INTO people (name, notes) VALUES ($1, $2) \
@@ -87,22 +90,29 @@ fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<String>
     Ok(name)
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    image: PathBuf,
+
+    #[arg(short, long)]
+    mode: Mode,
+
+    #[arg(short, long, default_value = "None")]
+    name: String,
+}
+
+#[derive(Copy, Clone, Debug, ValueEnum)]
+enum Mode {
+    Register,
+    Recognize,
+}
+
 fn main() -> Result<()> {
-    let path = env::args().nth(1).context("No path provided...")?;
-    let path2 = env::args().nth(2).context("Nops")?;
-    let result = get_embedding(&path)?;
-    let result2 = get_embedding(&path2)?;
-    let embedding = &result[0].embedding;
-    let embedding2 = &result2[0].embedding;
+    let args = Args::parse();
+    let path = canonicalize(args.image)?;
+    let embedding = get_embedding(&path);
     let mut client = get_client()?;
-    register(
-        &mut client,
-        "Hunter",
-        Some(String::from("Beast")),
-        embedding,
-        &path,
-    )?;
-    let name = recognition(&mut client, embedding2)?;
-    println!("{name:?}");
+
     Ok(())
 }
