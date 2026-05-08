@@ -1,5 +1,6 @@
 from deepface import DeepFace
-from lightdsa import json, sys
+import json
+import sys
 
 def embeddings(img: str):
     result = DeepFace.represent(
@@ -17,5 +18,5 @@ if __name__ == "__main__":
     try:
         embeddings(img=image_path)
     except Exception as e:
-        print(f"error", json.dumps(e))
+        print(f"error", json.dumps(str(e)))
         sys.exit(1)

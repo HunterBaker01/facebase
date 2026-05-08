@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail};
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand};
 use pgvector::Vector;
 use postgres::{Client, NoTls};
 use serde::Deserialize;
@@ -91,28 +91,47 @@ fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<String>
 }
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version, about)]
 struct Args {
-    image: PathBuf,
-
-    #[arg(short, long)]
-    mode: Mode,
-
-    #[arg(short, long, default_value = "None")]
-    name: String,
+    #[command(subcommand)]
+    command: Mode,
 }
 
-#[derive(Copy, Clone, Debug, ValueEnum)]
+#[derive(Subcommand, Debug)]
 enum Mode {
-    Register,
-    Recognize,
+    Register {
+        image: PathBuf,
+        #[arg(short, long)]
+        name: String,
+        #[arg(long)]
+        notes: Option<String>,
+    },
+
+    Recognize {
+        image: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let path = canonicalize(args.image)?;
-    let embedding = get_embedding(&path);
     let mut client = get_client()?;
+
+    match args.command {
+        Mode::Register { image, name, notes } => {
+            let path = canonicalize(&image)?;
+            let embedding = get_embedding(&path)?;
+            register(&mut client, &name, notes, &embedding[0].embedding, &path)?;
+            println!("Registered {name}");
+        }
+        Mode::Recognize { image } => {
+            let path = canonicalize(&image)?;
+            let embedding = get_embedding(&path)?;
+            match recognition(&mut client, &embedding[0].embedding)? {
+                Some(name) => println!("Matched: {name}"),
+                None => println!("Unknown face"),
+            }
+        }
+    }
 
     Ok(())
 }
