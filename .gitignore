@@ -6,9 +6,11 @@ python/.venv/
 # Rust
 organizer/target/
 
-# Env / secrets
+# Env
 .env
 
 # Don't commit real family photos or model cache
 data/
 *.pkl
+
+plan.txt
