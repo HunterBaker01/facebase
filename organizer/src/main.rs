@@ -23,8 +23,15 @@ fn get_client() -> Result<Client> {
 }
 
 fn get_embedding(img_path: &PathBuf) -> Result<Vec<Embedding>> {
-    let python = Path::new(env!("CARGO_MANIFEST_DIR")).join("../python/embedding.py");
-    let output = Command::new("python3").arg(python).arg(img_path).output()?;
+    let python_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../python");
+    let script = python_dir.join("embedding.py");
+    let output = Command::new("uv")
+        .arg("run")
+        .arg("--project")
+        .arg(&python_dir)
+        .arg(script)
+        .arg(img_path)
+        .output()?;
 
     if !output.status.success() {
         bail!("{}", String::from_utf8_lossy(&output.stderr));
