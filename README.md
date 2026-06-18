@@ -13,7 +13,24 @@ CLI tool that registers faces and recognizes people in photos using facial embed
 
 - Rust (via [rustup](https://rustup.rs))
 - PostgreSQL with the [pgvector](https://github.com/pgvector/pgvector) extension
-- Python 3 with DeepFace: `pip install deepface`
+- [uv](https://docs.astral.sh/uv/) — manages the Python environment and DeepFace.
+
+## Python setup
+
+The Rust binary shells out to `uv run` for the embedding script, so no manual
+virtualenv activation is needed. uv reads `python/pyproject.toml` and creates
+`python/.venv` automatically on first run.
+
+To pre-install the dependencies (optional — happens lazily otherwise):
+
+```bash
+cd python
+uv sync
+```
+
+uv installs the pinned Python (`3.13`) and DeepFace + TensorFlow into
+`python/.venv`. The first `DeepFace.represent` call also downloads the ArcFace
+and RetinaFace model weights.
 
 ## Database setup
 
