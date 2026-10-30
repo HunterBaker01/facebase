@@ -1,4 +1,4 @@
-# Photo Organizer
+# Facebase - Face Recognition with Rust + pgvector
 
 > **Learning project** — built to explore Rust, PostgreSQL vector search, and face recognition. Not meant to outperform on-the-market products.
 
