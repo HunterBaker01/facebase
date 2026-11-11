@@ -1,6 +1,8 @@
-from deepface import DeepFace
 import json
 import sys
+
+from deepface import DeepFace
+
 
 def embeddings(img: str):
     result = DeepFace.represent(
@@ -11,6 +13,7 @@ def embeddings(img: str):
     )
 
     print(json.dumps(result))
+
 
 if __name__ == "__main__":
     image_path = sys.argv[1]
