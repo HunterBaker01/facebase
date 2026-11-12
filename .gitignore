@@ -12,5 +12,3 @@ organizer/target/
 # Don't commit real family photos or model cache
 data/
 *.pkl
-
-plan.md
