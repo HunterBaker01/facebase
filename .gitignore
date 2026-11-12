@@ -12,3 +12,7 @@ organizer/target/
 # Don't commit real family photos or model cache
 data/
 *.pkl
+
+# Generated call graphs, used to keep track of the project
+scripts/
+out/
