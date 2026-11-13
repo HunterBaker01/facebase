@@ -23,7 +23,7 @@ fn get_client() -> Result<Client> {
         .context("Wasn't able to connect to the database...")
 }
 
-fn get_embedding(img_path: &PathBuf) -> Result<Vec<Embedding>> {
+fn get_embedding(img_path: &PathBuf) -> Result<Vector> {
     let python_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../python");
     let script = python_dir.join("embedding.py");
     let output = Command::new("uv")
@@ -37,9 +37,10 @@ fn get_embedding(img_path: &PathBuf) -> Result<Vec<Embedding>> {
     if !output.status.success() {
         bail!("{}", String::from_utf8_lossy(&output.stderr));
     }
+
     let ans = String::from_utf8(output.stdout)?;
-    let embedding: Vec<Embedding> = serde_json::from_str(&ans).context("Failed to parse JSON")?;
-    Ok(embedding)
+    let embedding: Embedding = serde_json::from_str(&ans).context("Failed to parse JSON")?;
+    Ok(embedding.embedding)
 }
 
 fn add_embedding(client: &mut Client, person_id: &i32, embedding: &Vector) -> Result<()> {
@@ -115,13 +116,13 @@ fn main() -> Result<()> {
         Mode::Register { image, name } => {
             let path = canonicalize(&image)?;
             let embedding = get_embedding(&path)?;
-            register(&mut client, &name, &embedding[0].embedding, &path)?;
+            register(&mut client, &name, &embedding, &path)?;
             println!("Registered {name}");
         }
         Mode::Recognize { image } => {
             let path = canonicalize(&image)?;
             let embedding = get_embedding(&path)?;
-            match recognition(&mut client, &embedding[0].embedding)? {
+            match recognition(&mut client, &embedding)? {
                 Some(name) => println!("Matched: {name}"),
                 None => println!("Unknown face"),
             }
