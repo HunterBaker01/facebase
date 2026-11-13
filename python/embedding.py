@@ -22,12 +22,6 @@ def embeddings(img: str):
     if len(faces) < 1:
         print("No faces detected...\nPlease upload a valid image...", file=sys.stderr)
         sys.exit(1)
-    elif len(faces) > 1:
-        print(
-            "Too many people...\nOnly one person in the image please...",
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     print(json.dumps(faces[0]))
 
