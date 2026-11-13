@@ -5,6 +5,7 @@ use postgres::{Client, NoTls};
 use serde::Deserialize;
 use std::env;
 use std::fs::canonicalize;
+use std::fs::remove_file;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -41,36 +42,25 @@ fn get_embedding(img_path: &PathBuf) -> Result<Vec<Embedding>> {
     Ok(embedding)
 }
 
-fn add_embedding(
-    client: &mut Client,
-    person_id: &i32,
-    embedding: &Vector,
-    img_path: &Path,
-) -> Result<()> {
-    let path = img_path.to_string_lossy();
+fn add_embedding(client: &mut Client, person_id: &i32, embedding: &Vector) -> Result<()> {
     client.execute(
-        "INSERT INTO face_embeddings (person_id, embedding, source_image_path) VALUES ($1, $2, $3)",
-        &[&person_id, &embedding, &path],
+        "INSERT INTO face_embeddings (person_id, embedding) VALUES ($1, $2)",
+        &[&person_id, &embedding],
     )?;
     Ok(())
 }
 
-fn register(
-    client: &mut Client,
-    name: &str,
-    notes: Option<String>,
-    embedding: &Vector,
-    img_path: &Path,
-) -> Result<()> {
+fn register(client: &mut Client, name: &str, embedding: &Vector, img_path: &Path) -> Result<()> {
     let row = client.query_one(
-        "INSERT INTO people (name, notes) VALUES ($1, $2) \
-            ON CONFLICT (name) DO UPDATE SET notes = EXCLUDED.notes \
+        "INSERT INTO people (name) VALUES ($1) \
             RETURNING id",
-        &[&name, &notes.unwrap_or(String::from("None"))],
+        &[&name],
     )?;
 
     let person_id: i32 = row.get("id");
-    add_embedding(client, &person_id, embedding, img_path)?;
+    add_embedding(client, &person_id, embedding)?;
+
+    remove_file(img_path).context("Failed to delete the registration photos...")?;
     Ok(())
 }
 
@@ -110,8 +100,6 @@ enum Mode {
         image: PathBuf,
         #[arg(short, long)]
         name: String,
-        #[arg(long)]
-        notes: Option<String>,
     },
 
     Recognize {
@@ -124,10 +112,10 @@ fn main() -> Result<()> {
     let mut client = get_client()?;
 
     match args.command {
-        Mode::Register { image, name, notes } => {
+        Mode::Register { image, name } => {
             let path = canonicalize(&image)?;
             let embedding = get_embedding(&path)?;
-            register(&mut client, &name, notes, &embedding[0].embedding, &path)?;
+            register(&mut client, &name, &embedding[0].embedding, &path)?;
             println!("Registered {name}");
         }
         Mode::Recognize { image } => {
