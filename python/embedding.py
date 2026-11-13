@@ -29,7 +29,7 @@ def embeddings(img: str):
         )
         sys.exit(1)
 
-    print(json.dumps(result))
+    print(json.dumps(face))
 
 
 if __name__ == "__main__":
