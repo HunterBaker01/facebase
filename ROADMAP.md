@@ -12,8 +12,9 @@ Recognize people in front of a camera and show each of them a personalized displ
 |---|-----------|--------|-------|
 | M1 | Register | 🟢 Done | Hunter |
 | M2 | Recognition | 🟡 In progress | Hunter |
-| M3 | Personalization (LLM) | ⚪ Not started | Hunter |
-| M4 | Display | ⚪ Not started | Hunter |
+| M3 | Display | ⚪ Not started | Hunter |
+| M4 | Live Rendering | ⚪ Not started | Hunter | 
+| M5 | Working Pipeline | ⚪ Not started | Hunter | 
 
 Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
@@ -37,48 +38,54 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## M2 — Recognition
 
-**Goal:** Compare an input face to the stored embeddings. If the distance is under the threshold, return the closest match; otherwise return guest.
+**Goal:** Compare an input face to the stored embeddings. If the distance is under the threshold, return the closest match; otherwise return guest. Feed the returned profile into an llm.
 
 **Current state:** `recognize` CLI command works, using cosine distance (`<=>`) with a hardcoded threshold of `0.4`.
 
 **Tasks**
 - [x] Nearest-neighbor lookup with pgvector
 - [x] Fall back to "Unknown" above the threshold
-- [ ] Return person ID (not just name) for use in M3
-- [ ] Make the threshold configurable
-- [ ] Tune the threshold on real photos
+- [x] Return person ID
+- [x] Pass the recognized ID profile to the LLM
+- [ ] Get a working output in the command line
 
-**Definition of done:** Given a photo, the system reliably returns the correct person ID or `guest`.
-
----
-
-## M3 — Personalization (LLM)
-
-**Goal:** Feed the recognized ID to an LLM, which matches it to a profile and generates a personalized response.
-
-**Tasks**
-- [ ] Define the profile data model (what each person's profile contains)
-- [ ] Pass the recognized ID to the LLM
-- [ ] LLM matches the ID to a profile and produces a personalized response
-- [ ] Integrate data sources (weather, to-do, calendar, email, etc)
-
-**Definition of done:** A recognized ID produces a personalized response; `guest` produces a generic one.
+**Definition of done:** Given a photo, the system returns a personalized response based on there profile.
 
 ---
 
-## M4 — Display
+## M3 — Display
 
 **Goal:** Show the personalized info from the LLM on a display.
 
 **Tasks**
-- [ ] Choose display target (web page, desktop app, hardware screen)
-- [ ] Render the LLM response
+- [ ] Setup webapp basics
+- [ ] Uploading a photo of a person displays their personalized output
 - [ ] Guest view
+
+**Definition of done:** Can upload an image to the site and it gives the personalized output, website does not need to be clean.
+
+---
+
+## M4 — Live Rendering
+
+**Goal:** Display the output live based on who is in front of the camera.
+
+**Tasks**
+- [ ] Recognize the person in front of the camera
 
 **Definition of done:** Stepping in front of the camera shows the right person's display.
 
 ---
 
+## M5 — Working Pipeline
+
+**Goal:** Get a working pipeline of the app. 
+
+**Tasks**
+
+**Definition of done:** The app can be downloaded and ran end to end even if not pretty. 
+
+---
 ## Open Questions
 
 | # | Question | Milestone | Decision |
@@ -90,5 +97,6 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-15:** Combined M2 and M3 and added more milestones.
 - **2026-11-15:** M1 (Register) marked done.
 - **2026-11-12:** Converted `plan.md` into this roadmap.
