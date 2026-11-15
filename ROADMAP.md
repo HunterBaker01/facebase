@@ -1,6 +1,6 @@
 # Facebase Roadmap
 
-_Last updated: 2026-11-12_
+_Last updated: 2026-11-15_
 
 ## Vision
 
@@ -10,7 +10,7 @@ Recognize people in front of a camera and show each of them a personalized displ
 
 | # | Milestone | Status | Owner |
 |---|-----------|--------|-------|
-| M1 | Register | 🟡 In progress | Hunter |
+| M1 | Register | 🟢 Done | Hunter |
 | M2 | Recognition | 🟡 In progress | Hunter |
 | M3 | Personalization (LLM) | ⚪ Not started | Hunter |
 | M4 | Display | ⚪ Not started | Hunter |
@@ -28,8 +28,8 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Tasks**
 - [x] CLI `register` command with `--name` and `--notes`
 - [x] Store embeddings in Postgres/pgvector
-- [ ] Make register photos temporary and delete them after registration
-- [ ] Handle photos with zero or multiple faces (currently uses `embedding[0]` only)
+- [x] Make register photos temporary and delete them after registration
+- [x] Handle photos with zero or multiple faces (currently uses `embedding[0]` only)
 
 **Definition of done:** A person can be registered from one or more photos, and no source photos remain on disk afterward.
 
@@ -90,4 +90,5 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-15:** M1 (Register) marked done.
 - **2026-11-12:** Converted `plan.md` into this roadmap.
