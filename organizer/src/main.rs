@@ -179,7 +179,10 @@ fn main() -> Result<()> {
             let path = canonicalize(&image)?;
             let embedding = get_embedding(&path)?;
             match recognition(&mut client, &embedding)? {
-                Some(person_id) => println!("Matched: {person_id}"),
+                Some(person_id) => {
+                    let resp = llm(&mut client, &person_id)?;
+                    println!("{:?}", resp);
+                }
                 None => println!("Unknown face"),
             }
         }
