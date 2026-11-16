@@ -11,8 +11,8 @@ Recognize people in front of a camera and show each of them a personalized displ
 | # | Milestone | Status | Owner |
 |---|-----------|--------|-------|
 | M1 | Register | 🟢 Done | Hunter |
-| M2 | Recognition | 🟡 In progress | Hunter |
-| M3 | Display | ⚪ Not started | Hunter |
+| M2 | Recognition | 🟢 Done | Hunter |
+| M3 | Display | 🟡 In progress | Hunter |
 | M4 | Live Rendering | ⚪ Not started | Hunter | 
 | M5 | Working Pipeline | ⚪ Not started | Hunter | 
 
@@ -47,7 +47,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 - [x] Fall back to "Unknown" above the threshold
 - [x] Return person ID
 - [x] Pass the recognized ID profile to the LLM
-- [ ] Get a working output in the command line
+- [x] Get a working output in the command line
 
 **Definition of done:** Given a photo, the system returns a personalized response based on there profile.
 
@@ -97,6 +97,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-16** M2 (Recognition) marked done.
 - **2026-11-15:** Combined M2 and M3 and added more milestones.
 - **2026-11-15:** M1 (Register) marked done.
 - **2026-11-12:** Converted `plan.md` into this roadmap.
