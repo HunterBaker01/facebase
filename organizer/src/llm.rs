@@ -14,10 +14,10 @@ struct LLMResponse {
     content: Vec<Block>,
 }
 
-pub fn llm(profile: serde_json::Value) -> Result<String> {
+pub async fn llm(profile: serde_json::Value) -> Result<String> {
     let api_key = env::var("ANTHROPIC_API_KEY").context("LLM Key not set")?;
 
-    let http = reqwest::blocking::Client::builder()
+    let http = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(120))
         .build()?;
 
@@ -33,13 +33,14 @@ pub fn llm(profile: serde_json::Value) -> Result<String> {
             "system": "Write a short personalized greeting based on this persons profile",
             "messages": [{ "role": "user", "content": profile }]
         }))
-        .send()?;
+        .send()
+        .await?;
 
     if !resp.status().is_success() {
-        bail!("LLM {}: {}", resp.status(), resp.text()?);
+        bail!("LLM {}: {}", resp.status(), resp.text().await?);
     }
 
-    let body: LLMResponse = resp.json()?;
+    let body: LLMResponse = resp.json().await?;
     let text = body
         .content
         .into_iter()

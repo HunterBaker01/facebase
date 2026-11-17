@@ -1,44 +1,59 @@
 use anyhow::{Context, Result};
 use pgvector::Vector;
-use postgres::{Client, NoTls};
+use tokio_postgres::{Client, Config, NoTls};
 
-pub fn get_client() -> Result<Client> {
-    Client::configure()
+pub async fn get_client() -> Result<Client> {
+    let (client, connection) = Config::new()
         .host("localhost")
         .dbname("photos")
         .user(std::env::var("USER")?.as_str())
         .connect(NoTls)
-        .context("Wasn't able to connect to the database...")
+        .await
+        .context("Wasn't able to connect to the database...")?;
+
+    tokio::spawn(async move {
+        if let Err(e) = connection.await {
+            eprintln!("database connection error: {e}");
+        }
+    });
+
+    Ok(client)
 }
 
-fn add_embedding(client: &mut Client, person_id: &i32, embedding: &Vector) -> Result<()> {
-    client.execute(
-        "INSERT INTO face_embeddings (person_id, embedding) VALUES ($1, $2)",
-        &[&person_id, &embedding],
-    )?;
+async fn add_embedding(client: &Client, person_id: &i32, embedding: &Vector) -> Result<()> {
+    client
+        .execute(
+            "INSERT INTO face_embeddings (person_id, embedding) VALUES ($1, $2)",
+            &[&person_id, &embedding],
+        )
+        .await?;
     Ok(())
 }
 
-pub fn register(client: &mut Client, name: &str, embedding: &Vector) -> Result<()> {
-    let row = client.query_one(
-        "INSERT INTO people (name) VALUES ($1) \
+pub async fn register(client: &Client, name: &str, embedding: &Vector) -> Result<()> {
+    let row = client
+        .query_one(
+            "INSERT INTO people (name) VALUES ($1) \
             RETURNING id",
-        &[&name],
-    )?;
+            &[&name],
+        )
+        .await?;
 
     let person_id: i32 = row.try_get("id")?;
-    add_embedding(client, &person_id, embedding)?;
+    add_embedding(client, &person_id, embedding).await?;
 
     Ok(())
 }
 
-pub fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<i32>> {
-    let row = client.query_opt(
-        "SELECT person_id, embedding <=> $1 AS distance \
+pub async fn recognition(client: &Client, embedding: &Vector) -> Result<Option<i32>> {
+    let row = client
+        .query_opt(
+            "SELECT person_id, embedding <=> $1 AS distance \
          FROM face_embeddings \
          ORDER BY distance LIMIT 1",
-        &[&embedding],
-    )?;
+            &[&embedding],
+        )
+        .await?;
 
     let person_id = match row {
         Some(r) => {
@@ -54,13 +69,15 @@ pub fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<i32
     Ok(person_id)
 }
 
-pub fn get_profile(client: &mut Client, id: i32) -> Result<serde_json::Value> {
-    let row = client.query_one(
-        "SELECT profile \
+pub async fn get_profile(client: &Client, id: i32) -> Result<serde_json::Value> {
+    let row = client
+        .query_one(
+            "SELECT profile \
          FROM people \
          WHERE id = $1",
-        &[&id],
-    )?;
+            &[&id],
+        )
+        .await?;
     let profile: serde_json::Value = row.try_get("profile")?;
     Ok(profile)
 }
