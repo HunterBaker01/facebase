@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 mod db;
 mod embedding;
 mod llm;
+mod server;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -27,6 +28,8 @@ enum Mode {
     Recognize {
         image: PathBuf,
     },
+
+    Serve {},
 }
 
 #[tokio::main]
@@ -39,14 +42,14 @@ async fn main() -> Result<()> {
     match args.command {
         Mode::Register { image, name } => {
             let path = canonicalize(&image)?;
-            let embedding = embedding::get_embedding(&path)?;
+            let embedding = embedding::get_embedding(&path).await?;
             db::register(&client, &name, &embedding).await?;
             remove_file(&path).context("Failed to delete the registration photos...")?;
             println!("Registered {name}");
         }
         Mode::Recognize { image } => {
             let path = canonicalize(&image)?;
-            let embedding = embedding::get_embedding(&path)?;
+            let embedding = embedding::get_embedding(&path).await?;
             match db::recognition(&client, &embedding).await? {
                 Some(person_id) => {
                     let profile = db::get_profile(&client, person_id).await?;
@@ -56,6 +59,7 @@ async fn main() -> Result<()> {
                 None => println!("Unknown face"),
             }
         }
+        Mode::Serve {} => server::run().await?,
     }
 
     Ok(())
