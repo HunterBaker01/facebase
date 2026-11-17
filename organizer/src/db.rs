@@ -1,8 +1,6 @@
 use anyhow::{Context, Result};
 use pgvector::Vector;
 use postgres::{Client, NoTls};
-use std::fs::remove_file;
-use std::path::Path;
 
 pub fn get_client() -> Result<Client> {
     Client::configure()
@@ -21,12 +19,7 @@ fn add_embedding(client: &mut Client, person_id: &i32, embedding: &Vector) -> Re
     Ok(())
 }
 
-pub fn register(
-    client: &mut Client,
-    name: &str,
-    embedding: &Vector,
-    img_path: &Path,
-) -> Result<()> {
+pub fn register(client: &mut Client, name: &str, embedding: &Vector) -> Result<()> {
     let row = client.query_one(
         "INSERT INTO people (name) VALUES ($1) \
             RETURNING id",
@@ -36,7 +29,6 @@ pub fn register(
     let person_id: i32 = row.try_get("id")?;
     add_embedding(client, &person_id, embedding)?;
 
-    remove_file(img_path).context("Failed to delete the registration photos...")?;
     Ok(())
 }
 
@@ -60,4 +52,15 @@ pub fn recognition(client: &mut Client, embedding: &Vector) -> Result<Option<i32
         None => None,
     };
     Ok(person_id)
+}
+
+pub fn get_profile(client: &mut Client, id: i32) -> Result<serde_json::Value> {
+    let row = client.query_one(
+        "SELECT profile \
+         FROM people \
+         WHERE id = $1",
+        &[&id],
+    )?;
+    let profile: serde_json::Value = row.try_get("profile")?;
+    Ok(profile)
 }

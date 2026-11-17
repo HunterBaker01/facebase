@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use std::env;
 use std::fs::canonicalize;
+use std::fs::remove_file;
 use std::path::{Path, PathBuf};
 
 mod db;
@@ -38,15 +39,17 @@ fn main() -> Result<()> {
         Mode::Register { image, name } => {
             let path = canonicalize(&image)?;
             let embedding = embedding::get_embedding(&path)?;
-            db::register(&mut client, &name, &embedding, &path)?;
+            db::register(&mut client, &name, &embedding)?;
             println!("Registered {name}");
+            remove_file(&path).context("Failed to delete the registration photos...")?;
         }
         Mode::Recognize { image } => {
             let path = canonicalize(&image)?;
             let embedding = embedding::get_embedding(&path)?;
             match db::recognition(&mut client, &embedding)? {
                 Some(person_id) => {
-                    let resp = llm::llm(&mut client, &person_id)?;
+                    let profile = db::get_profile(&mut client, person_id)?;
+                    let resp = llm::llm(profile)?;
                     println!("{}", resp);
                 }
                 None => println!("Unknown face"),

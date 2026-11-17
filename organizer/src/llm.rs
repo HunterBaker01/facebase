@@ -1,5 +1,4 @@
 use anyhow::{Context, Result, bail};
-use postgres::Client;
 use serde::Deserialize;
 use std::env;
 
@@ -15,20 +14,13 @@ struct LLMResponse {
     content: Vec<Block>,
 }
 
-pub fn llm(client: &mut Client, id: &i32) -> Result<String> {
+pub fn llm(profile: serde_json::Value) -> Result<String> {
     let api_key = env::var("ANTHROPIC_API_KEY").context("LLM Key not set")?;
 
     let http = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(120))
         .build()?;
 
-    let row = client.query_one(
-        "SELECT profile \
-         FROM people \
-         WHERE id = $1",
-        &[&id],
-    )?;
-    let profile: serde_json::Value = row.try_get("profile")?;
     let profile = serde_json::to_string_pretty(&profile)?;
 
     let resp = http
