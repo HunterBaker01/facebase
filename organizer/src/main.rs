@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
                 None => println!("Unknown face"),
             }
         }
-        Mode::Serve {} => server::run().await?,
+        Mode::Serve {} => server::run(client).await?,
     }
 
     Ok(())
