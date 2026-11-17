@@ -1,11 +1,13 @@
 use anyhow::Result;
-use axum::extract::{Path, State};
+use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
 use axum::response::{IntoResponse, Response};
-use axum::{Json, Router, http::StatusCode, routing::get};
+use axum::routing::{get, post};
+use axum::{Json, Router, http::StatusCode};
+use serde::Serialize;
 use std::sync::Arc;
 use tokio_postgres::Client;
 
-use crate::db;
+use crate::{db, embedding, llm};
 
 async fn hello_world() -> &'static str {
     "Hello World!"
@@ -38,6 +40,12 @@ where
     }
 }
 
+#[derive(Serialize)]
+struct RecognizeResponse {
+    recognized: bool,
+    message: String,
+}
+
 pub async fn run(client: Client) -> Result<()> {
     let state = AppState {
         db: Arc::new(client),
@@ -45,6 +53,8 @@ pub async fn run(client: Client) -> Result<()> {
     let app = Router::new()
         .route("/hello", get(hello_world))
         .route("/api/profile/{id}", get(profile))
+        .route("/api/recognize", post(recognize_response))
+        .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
@@ -59,4 +69,31 @@ async fn profile(
 ) -> Result<Json<serde_json::Value>, AppError> {
     let profile = db::get_profile(&state.db, id).await?;
     Ok(Json(profile))
+}
+
+async fn recognize_response(
+    State(state): State<AppState>,
+    mut multipart: Multipart,
+) -> Result<String, AppError> {
+    let mut image = None;
+    while let Some(field) = multipart.next_field().await? {
+        if field.name() == Some("image") {
+            image = Some(field.bytes().await?);
+        }
+    }
+    let bytes = image.ok_or_else(|| anyhow::anyhow!("no image field..."))?;
+
+    let file = tempfile::NamedTempFile::new()?;
+    tokio::fs::write(file.path(), &bytes).await?;
+
+    let embedding = embedding::get_embedding(file.path()).await?;
+
+    match db::recognition(&state.db, &embedding).await? {
+        Some(id) => {
+            let profile = db::get_profile(&state.db, id).await?;
+            let message = llm::llm(profile).await?;
+            Ok(message)
+        }
+        None => Ok("You're a guest, yuppee".to_string()),
+    }
 }

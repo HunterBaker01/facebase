@@ -28,7 +28,8 @@ pub async fn llm(profile: serde_json::Value) -> Result<String> {
         .header("x-api-key", api_key)
         .header("anthropic-version", "2026-10-21")
         .json(&serde_json::json!({
-            "model": "claude-opus-5-5",
+            "model": "claude-haiku-5-5",
+            "output_config": { "effort": "low" },
             "max_tokens": 2000,
             "system": "Write a short personalized greeting based on this persons profile",
             "messages": [{ "role": "user", "content": profile }]
