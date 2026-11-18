@@ -72,6 +72,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 **Tasks**
 - [ ] Get access to the camera
+- [ ] Update every 2-3 seconds (DeepFace is slow now)
 - [ ] Recognize the person in front of the camera
 
 **Definition of done:** Stepping in front of the camera shows the right person's display.
