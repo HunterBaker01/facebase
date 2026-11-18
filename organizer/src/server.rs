@@ -1,6 +1,6 @@
 use anyhow::Result;
 use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
-use axum::response::{IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router, http::StatusCode};
 use serde::Serialize;
@@ -8,10 +8,6 @@ use std::sync::Arc;
 use tokio_postgres::Client;
 
 use crate::{db, embedding, llm};
-
-async fn hello_world() -> &'static str {
-    "Hello World!"
-}
 
 #[derive(Clone)]
 struct AppState {
@@ -51,9 +47,9 @@ pub async fn run(client: Client) -> Result<()> {
         db: Arc::new(client),
     };
     let app = Router::new()
-        .route("/hello", get(hello_world))
         .route("/api/profile/{id}", get(profile))
         .route("/api/recognize", post(recognize_response))
+        .route("/", get(index))
         .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
         .with_state(state);
 
@@ -61,6 +57,10 @@ pub async fn run(client: Client) -> Result<()> {
     println!("listening on http://127.0.0.1:3000");
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+async fn index() -> Html<&'static str> {
+    Html(include_str!("../static/index.html"))
 }
 
 async fn profile(

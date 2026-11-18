@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Facebase</title>
+  </head>
+  <body>
+    <h1>Facebase</h1>
+    <input type="file" id="photo" accept="image/*" />
+    <button id="go">Recognize</button>
+
+    <img id="preview" width="300" />
+    <pre id="out"></pre>
+    <script>
+      const photo = document.getElementById("photo");
+      const go = document.getElementById("go");
+      const preview = document.getElementById("preview");
+      const out = document.getElementById("out");
+
+      photo.addEventListener("change", () => {
+        const file = photo.files[0];
+        if (file) preview.src = URL.createObjectURL(file);
+      });
+
+      go.addEventListener("click", async () => {
+        const file = photo.files[0];
+        if (!file) {
+          out.textContent = "Pick a photo first";
+          return;
+        }
+
+        out.textContent = "Thinking...";
+
+        const fd = new FormData();
+        fd.append("image", file);
+
+        const res = await fetch("/api/recognize", { method: "POST", body: fd });
+
+        if (res.ok) {
+          out.textContent = await res.text();
+        } else {
+          out.textContent = "Error " + res.status;
+        }
+      });
+    </script>
+  </body>
+</html>
