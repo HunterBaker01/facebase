@@ -13,8 +13,9 @@ Recognize people in front of a camera and show each of them a personalized displ
 | M1 | Register | 🟢 Done | Hunter |
 | M2 | Recognition | 🟢 Done | Hunter |
 | M3 | Display | 🟢 Done | Hunter |
-| M4 | Live Rendering |  🟡 In progress | Hunter | 
-| M5 | Working Pipeline | ⚪ Not started | Hunter | 
+| M4 | Live Rendering |  🟢 Done | Hunter | 
+| M5 | Working Pipeline | 🟡 In progress | Hunter | 
+| M6 | Clean Up | ⚪ Not Started | Hunter | 
 
 Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
@@ -92,7 +93,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ---
 
-## M6 — Speed UP
+## M6 — Clean Up
 
 **Goal:** Speed the app up
 
@@ -112,7 +113,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
-- **2026-11-18** M3 (Display) marked done. Added M6
+- **2026-11-18** M3 (Display) and M4 (Live Rendering) marked done. Added M6
 - **2026-11-16** M2 (Recognition) marked done.
 - **2026-11-15:** Combined M2 and M3 and added more milestones.
 - **2026-11-15:** M1 (Register) marked done.
