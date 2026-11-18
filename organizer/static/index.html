@@ -37,9 +37,14 @@
         const res = await fetch("/api/recognize", { method: "POST", body: fd });
 
         if (res.ok) {
-          out.textContent = await res.text();
+          const data = await res.json();
+          if (data.recognized) {
+            out.textContent = data.message;
+          } else {
+            out.textContent = "Guest view: " + data.message;
+          }
         } else {
-          out.textContent = "Error " + res.status;
+          out.textContent = "Error: " + res.status;
         }
       });
     </script>

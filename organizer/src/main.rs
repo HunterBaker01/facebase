@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use std::env;
 use std::fs::canonicalize;
-use std::fs::remove_file;
+// use std::fs::remove_file;
 use std::path::{Path, PathBuf};
 
 mod db;
@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
             let path = canonicalize(&image)?;
             let embedding = embedding::get_embedding(&path).await?;
             db::register(&client, &name, &embedding).await?;
-            remove_file(&path).context("Failed to delete the registration photos...")?;
+            // remove_file(&path).context("Failed to delete the registration photos...")?;
             println!("Registered {name}");
         }
         Mode::Recognize { image } => {

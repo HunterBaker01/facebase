@@ -74,7 +74,7 @@ async fn profile(
 async fn recognize_response(
     State(state): State<AppState>,
     mut multipart: Multipart,
-) -> Result<String, AppError> {
+) -> Result<Json<RecognizeResponse>, AppError> {
     let mut image = None;
     while let Some(field) = multipart.next_field().await? {
         if field.name() == Some("image") {
@@ -92,8 +92,14 @@ async fn recognize_response(
         Some(id) => {
             let profile = db::get_profile(&state.db, id).await?;
             let message = llm::llm(profile).await?;
-            Ok(message)
+            Ok(Json(RecognizeResponse {
+                recognized: true,
+                message,
+            }))
         }
-        None => Ok("You're a guest, yuppee".to_string()),
+        None => Ok(Json(RecognizeResponse {
+            recognized: false,
+            message: "You're a guest, yupeee!".to_string(),
+        })),
     }
 }
