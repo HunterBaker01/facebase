@@ -6,6 +6,8 @@
   </head>
   <body>
     <h1>Facebase</h1>
+    <video id="cam" autoplay playsinline width="400"></video>
+    <button id="start">Start camera</button>
     <input type="file" id="photo" accept="image/*" />
     <button id="go">Recognize</button>
 
@@ -16,6 +18,15 @@
       const go = document.getElementById("go");
       const preview = document.getElementById("preview");
       const out = document.getElementById("out");
+      const cam = document.getElementById("cam");
+      const start = document.getElementById("start");
+
+      start.addEventListener("click", async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        cam.srcObject = stream;
+      });
 
       photo.addEventListener("change", () => {
         const file = photo.files[0];
