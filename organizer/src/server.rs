@@ -4,7 +4,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router, http::StatusCode};
 use serde::Serialize;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio_postgres::Client;
 
 use crate::{db, embedding, llm};
@@ -12,6 +12,7 @@ use crate::{db, embedding, llm};
 #[derive(Clone)]
 struct AppState {
     db: Arc<Client>,
+    last: Arc<Mutex<Option<(i32, String)>>>,
 }
 
 struct AppError(anyhow::Error);
@@ -45,6 +46,7 @@ struct RecognizeResponse {
 pub async fn run(client: Client) -> Result<()> {
     let state = AppState {
         db: Arc::new(client),
+        last: Arc::new(Mutex::new(None)),
     };
     let app = Router::new()
         .route("/api/profile/{id}", get(profile))
@@ -90,8 +92,23 @@ async fn recognize_response(
 
     match db::recognition(&state.db, &embedding).await? {
         Some(id) => {
-            let profile = db::get_profile(&state.db, id).await?;
-            let message = llm::llm(profile).await?;
+            let cached = {
+                let last = state.last.lock().unwrap();
+                match &*last {
+                    Some((last_id, msg)) if *last_id == id => Some(msg.clone()),
+                    _ => None,
+                }
+            };
+
+            let message = match cached {
+                Some(msg) => msg,
+                None => {
+                    let profile = db::get_profile(&state.db, id).await?;
+                    let msg = llm::llm(profile).await?;
+                    *state.last.lock().unwrap() = Some((id, msg.clone()));
+                    msg
+                }
+            };
             Ok(Json(RecognizeResponse {
                 recognized: true,
                 message,
