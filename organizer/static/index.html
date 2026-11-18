@@ -8,43 +8,36 @@
     <h1>Facebase</h1>
     <video id="cam" autoplay playsinline width="400"></video>
     <button id="start">Start camera</button>
-    <input type="file" id="photo" accept="image/*" />
-    <button id="go">Recognize</button>
-
-    <img id="preview" width="300" />
+    <canvas id="snap" hidden></canvas>
     <pre id="out"></pre>
+
     <script>
-      const photo = document.getElementById("photo");
-      const go = document.getElementById("go");
-      const preview = document.getElementById("preview");
       const out = document.getElementById("out");
       const cam = document.getElementById("cam");
       const start = document.getElementById("start");
+      const snap = document.getElementById("snap");
 
       start.addEventListener("click", async () => {
+        start.disabled = true;
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
         cam.srcObject = stream;
+        await cam.play();
+        loop();
       });
 
-      photo.addEventListener("change", () => {
-        const file = photo.files[0];
-        if (file) preview.src = URL.createObjectURL(file);
-      });
+      async function sendFrame() {
+        snap.width = cam.videoWidth;
+        snap.height = cam.videoHeight;
+        snap.getContext("2d").drawImage(cam, 0, 0);
 
-      go.addEventListener("click", async () => {
-        const file = photo.files[0];
-        if (!file) {
-          out.textContent = "Pick a photo first";
-          return;
-        }
-
-        out.textContent = "Thinking...";
+        const blob = await new Promise((resolve) =>
+          snap.toBlob(resolve, "image/jpeg", 0.9),
+        );
 
         const fd = new FormData();
-        fd.append("image", file);
-
+        fd.append("image", blob, "frame.jpg");
         const res = await fetch("/api/recognize", { method: "POST", body: fd });
 
         if (res.ok) {
@@ -57,7 +50,16 @@
         } else {
           out.textContent = "Error: " + res.status;
         }
-      });
+      }
+
+      async function loop() {
+        try {
+          await sendFrame();
+        } catch (err) {
+          out.textContent = "Error: " + err;
+        }
+        setTimeout(loop, 3000);
+      }
     </script>
   </body>
 </html>
