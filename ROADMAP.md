@@ -1,6 +1,6 @@
 # Facebase Roadmap
 
-_Last updated: 2026-11-15_
+_Last updated: 2026-11-18_
 
 ## Vision
 
@@ -12,8 +12,8 @@ Recognize people in front of a camera and show each of them a personalized displ
 |---|-----------|--------|-------|
 | M1 | Register | 🟢 Done | Hunter |
 | M2 | Recognition | 🟢 Done | Hunter |
-| M3 | Display | 🟡 In progress | Hunter |
-| M4 | Live Rendering | ⚪ Not started | Hunter | 
+| M3 | Display | 🟢 Done | Hunter |
+| M4 | Live Rendering |  🟡 In progress | Hunter | 
 | M5 | Working Pipeline | ⚪ Not started | Hunter | 
 
 Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
@@ -58,9 +58,9 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Goal:** Show the personalized info from the LLM on a display.
 
 **Tasks**
-- [ ] Setup webapp basics
-- [ ] Uploading a photo of a person displays their personalized output
-- [ ] Guest view
+- [x] Setup webapp basics
+- [x] Uploading a photo of a person displays their personalized output
+- [x] Guest view
 
 **Definition of done:** Can upload an image to the site and it gives the personalized output, website does not need to be clean.
 
@@ -71,6 +71,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Goal:** Display the output live based on who is in front of the camera.
 
 **Tasks**
+- [ ] Get access to the camera
 - [ ] Recognize the person in front of the camera
 
 **Definition of done:** Stepping in front of the camera shows the right person's display.
@@ -82,8 +83,21 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Goal:** Get a working pipeline of the app. 
 
 **Tasks**
+- [ ] Add register funcionality to the webapp
 
 **Definition of done:** The app can be downloaded and ran end to end even if not pretty. 
+
+---
+
+---
+
+## M6 — Speed UP
+
+**Goal:** Speed the app up
+
+**Tasks**
+
+**Definition of done:** The app works as it should but much faster
 
 ---
 ## Open Questions
@@ -97,6 +111,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-18** M3 (Display) marked done. Added M6
 - **2026-11-16** M2 (Recognition) marked done.
 - **2026-11-15:** Combined M2 and M3 and added more milestones.
 - **2026-11-15:** M1 (Register) marked done.
