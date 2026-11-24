@@ -16,3 +16,5 @@ data/
 # Generated call graphs, used to keep track of the project
 scripts/
 out/
+
+.DS_Store
