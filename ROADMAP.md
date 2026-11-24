@@ -1,6 +1,6 @@
 # Facebase Roadmap
 
-_Last updated: 2026-11-18_
+_Last updated: 2026-11-24_
 
 ## Vision
 
@@ -25,15 +25,14 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 **Goal:** Store a person's face embeddings in the database, linked to their profile.
 
-**Current state:** `register` CLI command works. It embeds a photo (ArcFace via DeepFace), upserts the person into `people`, and inserts the embedding into `face_embeddings`.
+**Current state:** `register` CLI command works. It embeds a photo (ArcFace via DeepFace), inserts the person into `people`, and inserts the embedding into `face_embeddings`.
 
 **Tasks**
-- [x] CLI `register` command with `--name` and `--notes`
+- [x] CLI `register` command with `--name`
 - [x] Store embeddings in Postgres/pgvector
-- [x] Make register photos temporary and delete them after registration
 - [x] Handle photos with zero or multiple faces (currently uses `embedding[0]` only)
 
-**Definition of done:** A person can be registered from one or more photos, and no source photos remain on disk afterward.
+**Definition of done:** A person can be registered from one or more photos
 
 ---
 
@@ -72,9 +71,9 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Goal:** Display the output live based on who is in front of the camera.
 
 **Tasks**
-- [ ] Get access to the camera
-- [ ] Update every 2-3 seconds (DeepFace is slow now)
-- [ ] Recognize the person in front of the camera
+- [x] Get access to the camera
+- [x] Update every 2-3 seconds (DeepFace is slow now)
+- [x] Recognize the person in front of the camera
 
 **Definition of done:** Stepping in front of the camera shows the right person's display.
 
@@ -85,7 +84,12 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 **Goal:** Get a working pipeline of the app. 
 
 **Tasks**
-- [ ] Add register funcionality to the webapp
+- [ ] Add register functionality to the webapp
+- [ ] Make register photos temporary and delete them after registration
+- [ ] Database setup script, easy database setup
+- [ ] Configure environmental variables, not hardcoded
+- [ ] Add a .env example
+- [ ] Docker setup
 
 **Definition of done:** The app can be downloaded and ran end to end even if not pretty. 
 
@@ -113,6 +117,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-24** M1 and M5 updated (moved a task from M1 -> M5)
 - **2026-11-18** M3 (Display) and M4 (Live Rendering) marked done. Added M6
 - **2026-11-16** M2 (Recognition) marked done.
 - **2026-11-15:** Combined M2 and M3 and added more milestones.
