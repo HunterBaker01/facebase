@@ -8,6 +8,12 @@
     <h1>Facebase</h1>
     <video id="cam" autoplay playsinline width="400"></video>
     <button id="start">Start camera</button>
+
+    <div>
+      <input id="name" placeholder="Name" />
+      <button id="register">Register</button>
+    </div>
+
     <canvas id="snap" hidden></canvas>
     <pre id="out"></pre>
 
@@ -16,25 +22,52 @@
       const cam = document.getElementById("cam");
       const start = document.getElementById("start");
       const snap = document.getElementById("snap");
+      const register = document.getElementById("register");
+      const nameInput = document.getElementById("name");
 
-      start.addEventListener("click", async () => {
-        start.disabled = true;
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
-        cam.srcObject = stream;
-        await cam.play();
-        loop();
-      });
+      async function ensureCamera() {
+        if (!cam.srcObject) {
+          cam.srcObject = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          await cam.play();
+        }
+      }
 
-      async function sendFrame() {
+      async function captureFrame() {
         snap.width = cam.videoWidth;
         snap.height = cam.videoHeight;
         snap.getContext("2d").drawImage(cam, 0, 0);
-
-        const blob = await new Promise((resolve) =>
+        return new Promise((resolve) =>
           snap.toBlob(resolve, "image/jpeg", 0.9),
         );
+      }
+
+      start.addEventListener("click", async () => {
+        start.disabled = true;
+        await ensureCamera();
+        loop();
+      });
+
+      register.addEventListener("click", async () => {
+        const name = nameInput.value.trim();
+        if (!name) {
+          out.textContent = "Enter a name first";
+          return;
+        }
+
+        register.disabled = true;
+        try {
+          await ensureCamera();
+          await sendFrame_register(name);
+        } catch (err) {
+          out.textContent = "Error: " + err;
+        }
+        register.disabled = false;
+      });
+
+      async function sendFrame() {
+        const blob = await captureFrame();
 
         const fd = new FormData();
         fd.append("image", blob, "frame.jpg");
@@ -47,6 +80,22 @@
           } else {
             out.textContent = "Guest view: " + data.message;
           }
+        } else {
+          out.textContent = "Error: " + res.status;
+        }
+      }
+
+      async function sendFrame_register(name) {
+        const blob = await captureFrame();
+
+        const fd = new FormData();
+        fd.append("image", blob, "frame.jpg");
+        fd.append("name", name);
+        const res = await fetch("/api/register", { method: "POST", body: fd });
+
+        if (res.ok) {
+          out.textContent = await res.text();
+          nameInput.value = "";
         } else {
           out.textContent = "Error: " + res.status;
         }

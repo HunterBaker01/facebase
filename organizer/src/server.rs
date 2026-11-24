@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::{get, post};
+use axum::routing::{any, get, post};
 use axum::{Json, Router, http::StatusCode};
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
@@ -51,6 +51,7 @@ pub async fn run(client: Client) -> Result<()> {
     let app = Router::new()
         .route("/api/profile/{id}", get(profile))
         .route("/api/recognize", post(recognize_response))
+        .route("/api/register", post(web_register))
         .route("/", get(index))
         .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
         .with_state(state);
@@ -119,4 +120,29 @@ async fn recognize_response(
             message: "You're a guest, yupeee!".to_string(),
         })),
     }
+}
+
+async fn web_register(
+    State(state): State<AppState>,
+    mut multipart: Multipart,
+) -> Result<String, AppError> {
+    let mut image = None;
+    let mut name = None;
+    while let Some(field) = multipart.next_field().await? {
+        if field.name() == Some("image") {
+            image = Some(field.bytes().await?);
+        } else if field.name() == Some("name") {
+            name = Some(field.text().await?);
+        }
+    }
+    let bytes = image.ok_or_else(|| anyhow::anyhow!("no image field..."))?;
+    let name = name.ok_or_else(|| anyhow::anyhow!("no name field..."))?;
+
+    let file = tempfile::NamedTempFile::new()?;
+    tokio::fs::write(file.path(), &bytes).await?;
+
+    let embedding = embedding::get_embedding(file.path()).await?;
+    db::register(&state.db, &name, &embedding).await?;
+
+    Ok(format!("Registered {name}"))
 }
