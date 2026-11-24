@@ -1,9 +1,8 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use std::env;
 use std::fs::canonicalize;
-// use std::fs::remove_file;
-use std::path::{Path, PathBuf};
+use std::fs::remove_file;
+use std::path::PathBuf;
 
 mod db;
 mod embedding;
@@ -35,8 +34,7 @@ enum Mode {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    let env_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../.env");
-    dotenvy::from_path(&env_path).context(".env file could not be loaded...")?;
+    dotenvy::dotenv().ok();
     let client = db::get_client().await?;
 
     match args.command {
@@ -44,7 +42,7 @@ async fn main() -> Result<()> {
             let path = canonicalize(&image)?;
             let embedding = embedding::get_embedding(&path).await?;
             db::register(&client, &name, &embedding).await?;
-            // remove_file(&path).context("Failed to delete the registration photos...")?;
+            remove_file(&path).context("Failed to delete the registration photos...")?;
             println!("Registered {name}");
         }
         Mode::Recognize { image } => {

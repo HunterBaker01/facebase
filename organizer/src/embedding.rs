@@ -1,7 +1,7 @@
 use anyhow::{Context, Result, bail};
 use pgvector::Vector;
 use serde::Deserialize;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tokio::process::Command;
 
 #[derive(Deserialize, Debug)]
@@ -10,7 +10,8 @@ struct Embedding {
 }
 
 pub async fn get_embedding(img_path: &Path) -> Result<Vector> {
-    let python_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../python");
+    let python_dir =
+        PathBuf::from(std::env::var("PYTHON_DIR").unwrap_or_else(|_| "./python".into()));
     let script = python_dir.join("embedding.py");
     let output = Command::new("uv")
         .arg("run")

@@ -1,13 +1,11 @@
 use anyhow::{Context, Result};
 use pgvector::Vector;
-use tokio_postgres::{Client, Config, NoTls};
+use tokio_postgres::{Client, NoTls};
 
 pub async fn get_client() -> Result<Client> {
-    let (client, connection) = Config::new()
-        .host("localhost")
-        .dbname("photos")
-        .user(std::env::var("USER")?.as_str())
-        .connect(NoTls)
+    let url = std::env::var("DATABASE_URL").context("DATABASE_URL not set in .env")?;
+
+    let (client, connection) = tokio_postgres::connect(&url, NoTls)
         .await
         .context("Wasn't able to connect to the database...")?;
 

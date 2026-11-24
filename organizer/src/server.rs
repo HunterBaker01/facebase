@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::{any, get, post};
+use axum::routing::{get, post};
 use axum::{Json, Router, http::StatusCode};
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
@@ -56,8 +56,9 @@ pub async fn run(client: Client) -> Result<()> {
         .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
-    println!("listening on http://127.0.0.1:3000");
+    let addr = std::env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:3000".into());
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    println!("listening on {}", addr);
     axum::serve(listener, app).await?;
     Ok(())
 }
