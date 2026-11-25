@@ -1,6 +1,6 @@
 # Facebase Roadmap
 
-_Last updated: 2026-11-24_
+_Last updated: 2026-11-25_
 
 ## Vision
 
@@ -13,8 +13,8 @@ Recognize people in front of a camera and show each of them a personalized displ
 | M1 | Register | 🟢 Done | Hunter |
 | M2 | Recognition | 🟢 Done | Hunter |
 | M3 | Display | 🟢 Done | Hunter |
-| M4 | Live Rendering |  🟢 Done | Hunter | 
-| M5 | Working Pipeline | 🟡 In progress | Hunter | 
+| M4 | Live Rendering | 🟢 Done | Hunter |
+| M5 | Working Pipeline | 🟢 Done | Hunter |
 | M6 | Clean Up | ⚪ Not Started | Hunter | 
 
 Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
@@ -25,14 +25,16 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 **Goal:** Store a person's face embeddings in the database, linked to their profile.
 
-**Current state:** `register` CLI command works. It embeds a photo (ArcFace via DeepFace), inserts the person into `people`, and inserts the embedding into `face_embeddings`.
+**Current state:** Registration works from the CLI and the web app. It embeds a photo (ArcFace via DeepFace), inserts the person into `people`, and inserts the embedding into `face_embeddings`. Registration photos are deleted afterward (moved to M5).
 
 **Tasks**
 - [x] CLI `register` command with `--name`
 - [x] Store embeddings in Postgres/pgvector
-- [x] Handle photos with zero or multiple faces (currently uses `embedding[0]` only)
+- [x] Handle photos with zero or multiple faces (uses the first face with confidence ≥ 0.8)
+- ~~Make register photos temporary~~ → moved to M5
+- ~~Register from multiple photos per person~~ → moved to M6
 
-**Definition of done:** A person can be registered from one or more photos
+**Definition of done:** A person can be registered from a photo and stored with their embedding.
 
 ---
 
@@ -83,27 +85,32 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 **Goal:** Get a working pipeline of the app. 
 
+**Current state:** The app runs end to end with `docker compose up`: Postgres + pgvector and the app (Rust server + Python/DeepFace) each run in their own container. Tested from a fresh clone.
+
 **Tasks**
-- [ ] Add register functionality to the webapp
-- [ ] Make register photos temporary and delete them after registration
-- [ ] Database setup script, easy database setup
-- [ ] Configure environmental variables, not hardcoded
-- [ ] Add a .env example
-- [ ] Docker setup
+- [x] Add register functionality to the webapp (#20)
+- [x] Make register photos temporary and delete them after registration (#21)
+- [x] Database setup script, easy database setup (`db/schema.sql`, #22)
+- [x] Configure environment variables, not hardcoded (`DATABASE_URL`, `BIND_ADDR`, `PYTHON_DIR`, #23)
+- [x] Add a .env example (#24)
+- [x] Docker setup (`Dockerfile`, `docker-compose.yml`, #25)
 
-**Definition of done:** The app can be downloaded and ran end to end even if not pretty. 
-
----
+**Definition of done:** The app can be downloaded and ran end to end even if not pretty.
 
 ---
 
 ## M6 — Clean Up
 
-**Goal:** Speed the app up
+**Goal:** Speed the app up and make it nicer
 
 **Tasks**
+- [ ] Speed up embeddings (still undecided how)
+- [ ] Make the match threshold configurable, for now it's hardcoded
+- [ ] Register multiple photos per person to help with recognition, for now this is an error
+- [ ] Clearer error messages
+- [ ] Define the profile
 
-**Definition of done:** The app works as it should but much faster
+**Definition of done:** The app works as it should but much faster and prettier
 
 ---
 ## Open Questions
@@ -117,6 +124,7 @@ Legend: ⚪ Not started · 🟡 In progress · 🟢 Done · 🔴 Blocked
 
 ## Changelog
 
+- **2026-11-25:** M5 (Working Pipeline) marked done. M1 updated to match the code. Added M6 tasks.
 - **2026-11-24** M1 and M5 updated (moved a task from M1 -> M5)
 - **2026-11-18** M3 (Display) and M4 (Live Rendering) marked done. Added M6
 - **2026-11-16** M2 (Recognition) marked done.
