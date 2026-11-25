@@ -1,0 +1,7 @@
+organizer/target/
+python/.venv/
+python/__pycache__/
+.env
+.git/
+.DS_Store
+data/

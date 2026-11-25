@@ -18,5 +18,22 @@ services:
       timeout: 3s
       retries: 10
 
+  app:
+    build: .
+    image: facebase
+    container_name: facebase-app
+    restart: unless-stopped
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    volumes:
+      - deepface:/app/deepface
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   dbdata:
+  deepface:
